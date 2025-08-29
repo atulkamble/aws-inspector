@@ -33,6 +33,12 @@ This repository contains **end‑to‑end, GitHub‑ready code and steps** to st
 ## 🚀 Quickstart
 
 ```bash
+// troubleshoot 
+aws ec2 create-default-vpc
+
+IAM - user >> admin group  - AdminFullAccess*
+create access key and configure it 
+
 git clone https://github.com/atulkamble/aws-inspector.git
 cd aws-inspector-project/scripts
 
