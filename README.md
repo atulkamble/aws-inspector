@@ -1,183 +1,96 @@
-Here’s a **full AWS Inspector Project** that you can use for **hands-on practice, portfolio building, or training delivery** 🚀.
+# 🔹 Vulnerability Management with Amazon Inspector — Full Project
+
+This repository contains **end‑to‑end, GitHub‑ready code and steps** to stand up a demo of **Amazon Inspector v2** across **EC2** and **ECR**, wire up **Security Hub** + **SNS** for alerts, generate findings with an intentionally vulnerable container image, and then **remediate** via **AWS Systems Manager (SSM)**.
+
+> ⚠️ **Safety & Cost Notice**  
+> • Run this only in a **non‑production AWS account**.  
+> • You may incur charges (EC2, ECR, SNS, Security Hub).  
+> • Use the included `scripts/99-cleanup.sh` to tear down resources when you’re done.  
+> • You are responsible for your account security and costs.
 
 ---
 
-# 🔹 Project: Vulnerability Management with **Amazon Inspector**
+## 📦 What you’ll build
 
-## 📌 Overview
-
-Amazon Inspector is a **continuous vulnerability management service** that scans AWS workloads (EC2, ECR, Lambda) for **software vulnerabilities (CVEs)** and **network exposures**. In this project, we’ll enable Inspector, configure resources, and simulate a vulnerability detection and remediation workflow.
-
----
-
-## 🛠️ Tech Stack
-
-* **AWS Services:**
-
-  * Amazon Inspector
-  * Amazon EC2
-  * Amazon ECR (optional – container scanning)
-  * Amazon Lambda (optional – serverless scanning)
-  * AWS Systems Manager (SSM Agent for EC2)
-  * Amazon SNS (notifications)
-  * AWS Security Hub (optional – central findings view)
+- **EC2** instance (Amazon Linux) with SSM and a basic web server (to have packages to scan).
+- **Amazon Inspector v2** enabled for **EC2, ECR, Lambda**.
+- **ECR** private repo with a **known vulnerable image** (e.g., Juice Shop).
+- **Security Hub** integrated and an **EventBridge → SNS** alerting pipeline.
+- **SSM Run Command** based remediation for EC2.
+- Simple **CLI scripts** to orchestrate the entire flow.
 
 ---
 
-## 📂 Project Phases
+## 🧰 Prerequisites
 
-### **Phase 1: Environment Setup**
-
-1. Launch an **EC2 instance** (Amazon Linux 2).
-
-   ```bash
-   aws ec2 run-instances \
-     --image-id ami-0c02fb55956c7d316 \
-     --count 1 \
-     --instance-type t2.micro \
-     --key-name my-key \
-     --security-groups my-sg
-   ```
-
-2. Install some vulnerable packages intentionally (example: outdated Apache).
-
-   ```bash
-   sudo yum install httpd-2.2.15 -y
-   ```
-
-3. Make sure **SSM Agent** is running (required for Inspector).
-
-   ```bash
-   sudo systemctl status amazon-ssm-agent
-   ```
+- macOS/Linux terminal (Windows WSL is fine).
+- **AWS CLI v2**, **Docker**, **jq** installed and configured.
+- AWS credentials with permissions for: EC2, IAM, SSM, ECR, SNS, Events, Inspector2, SecurityHub.
+- Default region set (`aws configure get region`). You can override via `AWS_REGION` env var in all scripts.
 
 ---
 
-### **Phase 2: Enable Amazon Inspector**
+## 🚀 Quickstart
 
-1. Enable Inspector in your region:
+```bash
+git clone <YOUR_FORK_URL> aws-inspector-project
+cd aws-inspector-project
 
-   ```bash
-   aws inspector2 enable --resource-types EC2 ECR LAMBDA
-   ```
+# 1) Bootstrap: IAM role/profile, SG, EC2 (t3.micro), httpd, SSM, etc.
+bash scripts/01-bootstrap.sh
 
-2. Verify status:
+# 2) Enable Inspector (EC2/ECR/Lambda) and verify account status
+bash scripts/02-enable-inspector.sh
 
-   ```bash
-   aws inspector2 list-account-statistics
-   ```
+# 3) Push a vulnerable image to ECR to generate container findings
+#    (uses bkimminich/juice-shop:latest by default)
+bash scripts/03-push-vuln-image.sh
 
----
+# 4) Wire up Security Hub + EventBridge → SNS alerts (set your email)
+export ALERT_EMAIL="you@example.com"
+bash scripts/04-setup-sns-securityhub.sh
 
-### **Phase 3: Generate Findings**
+# 5) List findings (Inspector v2 and Security Hub views)
+bash scripts/05-list-findings.sh
 
-1. Inspector automatically scans EC2, ECR, and Lambda.
+# 6) Remediate EC2 (via SSM Run Command), then re-check findings
+bash scripts/06-remediate-ec2.sh
+bash scripts/05-list-findings.sh
 
-   * For **ECR**: Push a vulnerable Docker image.
+# 7) Clean up (optionally keep Security Hub by default)
+bash scripts/99-cleanup.sh
+```
 
-   ```bash
-   docker pull vulhub/phpmyadmin:latest
-   docker tag vulhub/phpmyadmin:latest <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com/test-repo:vuln
-   docker push <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com/test-repo:vuln
-   ```
-
-2. After a few minutes, Inspector will generate **findings**.
-
-   View findings:
-
-   ```bash
-   aws inspector2 list-findings
-   ```
+> 💡 Tip: open the **Amazon Inspector**, **ECR**, and **Security Hub** consoles to watch resources and findings appear in near‑real time (a few minutes after each step).
 
 ---
 
-### **Phase 4: Notifications & Remediation**
-
-1. Create an **SNS Topic** for alerts.
-
-   ```bash
-   aws sns create-topic --name InspectorAlerts
-   aws sns subscribe --topic-arn <sns-topic-arn> --protocol email --notification-endpoint youremail@example.com
-   ```
-
-2. Integrate Inspector with **Security Hub**:
-
-   ```bash
-   aws securityhub enable-security-hub
-   aws securityhub enable-import-findings-for-product --product-arn arn:aws:securityhub:us-east-1::product/aws/inspector
-   ```
-
-3. Inspector will now forward findings → Security Hub → SNS → Email.
-
----
-
-### **Phase 5: Remediation**
-
-1. Patch EC2 vulnerabilities:
-
-   ```bash
-   sudo yum update -y
-   ```
-
-2. Redeploy secure container images with patched versions.
-
-3. Validate that Inspector findings are resolved:
-
-   ```bash
-   aws inspector2 list-findings --filter-severity CRITICAL
-   ```
-
----
-
-## ✅ Project Deliverables
-
-* **EC2 scanning** with simulated vulnerabilities.
-* **ECR scanning** with a vulnerable container image.
-* **SNS notifications** for new findings.
-* **Security Hub integration** for centralized view.
-* **Automated remediation** (optional: via SSM Patch Manager or Lambda).
-
----
-
-## 📘 Repo Structure (GitHub-Ready)
+## 🗂️ Repository Structure
 
 ```
 aws-inspector-project/
 ├── README.md
-├── setup-ec2.sh
-├── enable-inspector.sh
-├── push-vuln-image.sh
-├── sns-setup.sh
-└── remediation-guide.md
+├── remediation-guide.md
+├── Makefile
+├── .gitignore
+└── scripts/
+    ├── 01-bootstrap.sh
+    ├── 02-enable-inspector.sh
+    ├── 03-push-vuln-image.sh
+    ├── 04-setup-sns-securityhub.sh
+    ├── 05-list-findings.sh
+    ├── 06-remediate-ec2.sh
+    └── 99-cleanup.sh
 ```
 
 ---
 
-👉 This project demonstrates **continuous vulnerability detection & remediation** using Amazon Inspector, a critical component of **AWS Security Best Practices**.
+## 📝 Notes & Best Practices
 
-Atul, would you like me to **write the complete GitHub-ready repo (with scripts + README)** for this project, similar to the other AWS projects we worked on?
+- **Inspector v2** continuously scans supported resources; findings may take a few minutes to appear.  
+- For **EC2**, ensure the instance is **SSM‑managed** (role + agent) and keep it online long enough for scans.  
+- For **ECR**, any image you push will be **automatically scanned** (no manual trigger required).  
+- **EventBridge → SNS** pipeline here targets **Security Hub imported findings** (including Inspector).  
+- Use **non‑prod** accounts and tear down with `99-cleanup.sh` when done.
 
-Awesome, Atul! I’ve packaged a **complete, GitHub-ready AWS Inspector project** with all scripts, a detailed README, a cleanup routine, and a remediation guide.
-
-👉 **Download the ZIP:** [aws-inspector-project.zip](sandbox:/mnt/data/aws-inspector-project.zip)
-
-### What’s inside
-
-* `README.md` — step-by-step guide (Quickstart included)
-* `scripts/` — one-click style shell scripts:
-
-  * `01-bootstrap.sh` — IAM role/profile, SG, **EC2 (AL2023)** with SSM + httpd
-  * `02-enable-inspector.sh` — enable Inspector v2 (EC2/ECR/Lambda) + basic checks
-  * `03-push-vuln-image.sh` — push **Juice Shop** image to **ECR** for scanning
-  * `04-setup-sns-securityhub.sh` — **Security Hub + EventBridge → SNS** alerts (email subscription)
-  * `05-list-findings.sh` — quick views from Inspector and Security Hub
-  * `06-remediate-ec2.sh` — **SSM Run Command** to patch the EC2 instance
-  * `99-cleanup.sh` — teardown (optionally disables Inspector/Security Hub with `NUKE=1`)
-* `remediation-guide.md` — quick fixes for common EC2/ECR findings
-* `Makefile` — friendly shortcuts (`make bootstrap`, `make findings`, etc.)
-* `.gitignore`
-
-No extra setup needed beyond **AWS CLI**, **jq**, and **Docker**. The scripts auto-detect your region (override with `AWS_REGION=...`).
-
-If you want, I can also add a **Terraform** version for EC2/IAM/ECR and leave the Inspector/Security Hub enablement to scripts—just say the word.
-
+See [`remediation-guide.md`](./remediation-guide.md) for additional tips.
