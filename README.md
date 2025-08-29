@@ -33,6 +33,9 @@ This repository contains **end‑to‑end, GitHub‑ready code and steps** to st
 ## 🚀 Quickstart
 
 ```bash
+// note 
+default-vpc should be present
+
 // troubleshoot 
 aws ec2 create-default-vpc
 
