@@ -156,3 +156,28 @@ aws-inspector-project/
 👉 This project demonstrates **continuous vulnerability detection & remediation** using Amazon Inspector, a critical component of **AWS Security Best Practices**.
 
 Atul, would you like me to **write the complete GitHub-ready repo (with scripts + README)** for this project, similar to the other AWS projects we worked on?
+
+Awesome, Atul! I’ve packaged a **complete, GitHub-ready AWS Inspector project** with all scripts, a detailed README, a cleanup routine, and a remediation guide.
+
+👉 **Download the ZIP:** [aws-inspector-project.zip](sandbox:/mnt/data/aws-inspector-project.zip)
+
+### What’s inside
+
+* `README.md` — step-by-step guide (Quickstart included)
+* `scripts/` — one-click style shell scripts:
+
+  * `01-bootstrap.sh` — IAM role/profile, SG, **EC2 (AL2023)** with SSM + httpd
+  * `02-enable-inspector.sh` — enable Inspector v2 (EC2/ECR/Lambda) + basic checks
+  * `03-push-vuln-image.sh` — push **Juice Shop** image to **ECR** for scanning
+  * `04-setup-sns-securityhub.sh` — **Security Hub + EventBridge → SNS** alerts (email subscription)
+  * `05-list-findings.sh` — quick views from Inspector and Security Hub
+  * `06-remediate-ec2.sh` — **SSM Run Command** to patch the EC2 instance
+  * `99-cleanup.sh` — teardown (optionally disables Inspector/Security Hub with `NUKE=1`)
+* `remediation-guide.md` — quick fixes for common EC2/ECR findings
+* `Makefile` — friendly shortcuts (`make bootstrap`, `make findings`, etc.)
+* `.gitignore`
+
+No extra setup needed beyond **AWS CLI**, **jq**, and **Docker**. The scripts auto-detect your region (override with `AWS_REGION=...`).
+
+If you want, I can also add a **Terraform** version for EC2/IAM/ECR and leave the Inspector/Security Hub enablement to scripts—just say the word.
+
