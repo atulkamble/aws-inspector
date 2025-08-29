@@ -33,32 +33,39 @@ This repository contains **end‑to‑end, GitHub‑ready code and steps** to st
 ## 🚀 Quickstart
 
 ```bash
-git clone <YOUR_FORK_URL> aws-inspector-project
-cd aws-inspector-project
+git clone https://github.com/atulkamble/aws-inspector.git
+cd aws-inspector-project/scripts
 
 # 1) Bootstrap: IAM role/profile, SG, EC2 (t3.micro), httpd, SSM, etc.
-bash scripts/01-bootstrap.sh
+chmod +x 01-bootstrap.sh
+./01-bootstrap.sh
 
 # 2) Enable Inspector (EC2/ECR/Lambda) and verify account status
-bash scripts/02-enable-inspector.sh
+chmod +x 02-enable-inspector.sh
+./02-enable-inspector.sh
 
 # 3) Push a vulnerable image to ECR to generate container findings
 #    (uses bkimminich/juice-shop:latest by default)
-bash scripts/03-push-vuln-image.sh
+chmod +x 03-push-vuln-image.sh
+./03-push-vuln-image.sh
 
 # 4) Wire up Security Hub + EventBridge → SNS alerts (set your email)
-export ALERT_EMAIL="you@example.com"
-bash scripts/04-setup-sns-securityhub.sh
+export ALERT_EMAIL="atul_kamble@hotmail.com"
+chmod +x 04-setup-sns-securityhub.sh
+./04-setup-sns-securityhub.sh
 
 # 5) List findings (Inspector v2 and Security Hub views)
-bash scripts/05-list-findings.sh
+chmod +x 05-list-findings.sh
+./05-list-findings.sh
 
 # 6) Remediate EC2 (via SSM Run Command), then re-check findings
-bash scripts/06-remediate-ec2.sh
-bash scripts/05-list-findings.sh
+chmod +x 06-remediate-ec2.sh
+./06-remediate-ec2.sh
+./05-list-findings.sh
 
 # 7) Clean up (optionally keep Security Hub by default)
-bash scripts/99-cleanup.sh
+chmod +x 99-cleanup.sh
+./99-cleanup.sh
 ```
 
 > 💡 Tip: open the **Amazon Inspector**, **ECR**, and **Security Hub** consoles to watch resources and findings appear in near‑real time (a few minutes after each step).
